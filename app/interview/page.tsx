@@ -73,41 +73,15 @@ export default function Interview() {
   };
 
   const processAudio = async (audioBlob: Blob) => {
-    if (demoMode) {
-      // Demo mode - simulate response
-      setTimeout(() => {
-        setTranscription(`Demo response for: "${interviewQuestions[currentQuestionIndex]}"`);
-        setFeedback(`CONTENT ANALYSIS:
-- Good attempt at explaining the concept
-- Could be more detailed about practical applications
-- Technical accuracy is solid
-
-PRONUNCIATION & COMMUNICATION:
-- Clear speech overall
-- Work on pronouncing "${interviewQuestions[currentQuestionIndex].split(' ')[0]}" more clearly
-- Good pace and confidence
-
-OVERALL SCORE: 7/10
-RECOMMENDATIONS:
-1. Add specific examples from your experience
-2. Practice explaining concepts in simpler terms
-3. Focus on confident delivery`);
-
-        // Mark as completed
-        const newCompleted = new Set(completedQuestions);
-        newCompleted.add(currentQuestionIndex);
-        setCompletedQuestions(newCompleted);
-        saveProgress(newCompleted);
-      }, 2000);
-      return;
-    }
+    setIsProcessing(true);
 
     try {
       if (demoMode) {
-        // Demo mode: simulate processing
-        setIsProcessing(true);
-        setTranscription('This is a demo transcription. In real mode, your audio would be transcribed here.');
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API delay
+        // Demo mode: simulate processing with realistic feedback
+        setTranscription(`Demo transcription: "${interviewQuestions[currentQuestionIndex]}"`);
+
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         const demoFeedback = `CONTENT ANALYSIS:
 - Strengths of the answer: Good structure and clear communication
@@ -118,7 +92,7 @@ RECOMMENDATIONS:
 PRONUNCIATION & COMMUNICATION:
 - Clarity of speech: Clear and understandable
 - Professional communication skills: Good pacing and confidence
-- Specific words/phrases that need pronunciation improvement: "JavaScript" could be more precise
+- Specific words/phrases that need pronunciation improvement: "${interviewQuestions[currentQuestionIndex].split(' ')[0]}" could be more precise
 - Suggestions for better delivery: Practice speaking at a slightly slower pace
 
 OVERALL SCORE: 7/10
@@ -130,7 +104,6 @@ RECOMMENDATIONS:
 4. Consider time management for longer answers`;
 
         setFeedback(demoFeedback);
-        setIsProcessing(false);
 
         // Mark as completed
         const newCompleted = new Set(completedQuestions);
@@ -140,6 +113,7 @@ RECOMMENDATIONS:
         return;
       }
 
+      // Real API mode
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.wav');
       formData.append('question', interviewQuestions[currentQuestionIndex]);
@@ -166,6 +140,7 @@ RECOMMENDATIONS:
       newCompleted.add(currentQuestionIndex);
       setCompletedQuestions(newCompleted);
       saveProgress(newCompleted);
+
     } catch (error) {
       console.error('Error processing audio:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error processing response. Please try again.';
@@ -247,22 +222,31 @@ RECOMMENDATIONS:
           <div className="text-center mb-8">
             <button
               onClick={isRecording ? stopRecording : startRecording}
-              disabled={isProcessing}
-              className={`px-6 py-3 rounded-lg font-semibold text-white transition-colors ${
+              disabled={isProcessing || isRecording}
+              className={`px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
                 isProcessing
-                  ? 'bg-gray-500 cursor-not-allowed'
+                  ? 'bg-gray-400 cursor-not-allowed opacity-60'
                   : isRecording
-                  ? 'bg-red-600 hover:bg-red-700'
-                  : 'bg-green-600 hover:bg-green-700'
+                  ? 'bg-red-600 hover:bg-red-700 animate-pulse'
+                  : 'bg-green-600 hover:bg-green-700 hover:scale-105'
               }`}
             >
-              {isProcessing ? 'Processing...' : isRecording ? 'Stop Recording' : `Start Your Answer${demoMode ? ' (Demo)' : ''}`}
+              {isProcessing ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Processing...</span>
+                </div>
+              ) : isRecording ? (
+                'Stop Recording'
+              ) : (
+                `Start Your Answer${demoMode ? ' (Demo)' : ''}`
+              )}
             </button>
             <p className="text-sm text-gray-500 mt-2">
               {isProcessing
-                ? 'Analyzing your response...'
+                ? 'AI is analyzing your response...'
                 : isRecording
-                ? 'Recording... Click to stop'
+                ? 'Recording... Click to stop and get feedback'
                 : 'Click to record your response using your microphone'
               }
             </p>
@@ -275,7 +259,19 @@ RECOMMENDATIONS:
             </div>
           )}
 
-          {feedback && (
+          {isProcessing && (
+            <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+              <div className="flex items-center space-x-3">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-600"></div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">AI is analyzing your response...</h3>
+                  <p className="text-sm text-gray-600">This may take a few seconds</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {feedback && !isProcessing && (
             <div className="mb-6 p-4 bg-green-50 rounded-lg">
               <h3 className="font-semibold text-gray-900 mb-2">Feedback:</h3>
               <div className="text-gray-700 whitespace-pre-line">{feedback}</div>
