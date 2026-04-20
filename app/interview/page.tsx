@@ -124,9 +124,27 @@ RECOMMENDATIONS:
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        if (errorData.error?.includes('quota') || errorData.error?.includes('billing') || errorData.error?.includes('insufficient_quota')) {
-          throw new Error('OpenAI API quota exceeded. Please check your OpenAI account billing or enable Demo Mode to practice without API calls.');
+
+        // Handle specific quota errors
+        if (response.status === 429 || errorData.type === 'quota_exceeded' || errorData.type === 'quota_exceeded_evaluation') {
+          throw new Error(`🚫 OpenAI Quota Exceeded\n\nYou have reached your daily/monthly API usage limit.\n\n${errorData.details || 'Both transcription and evaluation services are affected.'}\n\n💡 Enable Demo Mode to practice without API calls, or check your OpenAI billing at: https://platform.openai.com/account/billing`);
         }
+
+        // Handle transcription errors
+        if (errorData.type === 'transcription_error') {
+          throw new Error(`🎤 Transcription Failed\n\n${errorData.error}\n\n💡 Try recording again or enable Demo Mode.`);
+        }
+
+        // Handle evaluation errors
+        if (errorData.type === 'evaluation_error') {
+          // If we have transcription but evaluation failed, show partial result
+          if (errorData.transcription) {
+            setTranscription(errorData.transcription);
+            throw new Error(`🤖 Evaluation Failed\n\nTranscription successful, but AI evaluation failed: ${errorData.error}\n\n💡 Your response was recorded. Try again later or enable Demo Mode.`);
+          }
+          throw new Error(`🤖 Evaluation Failed\n\n${errorData.error}\n\n💡 Try again or enable Demo Mode.`);
+        }
+
         throw new Error(`Failed to process response: ${errorData.error || 'Unknown error'}`);
       }
 
@@ -143,9 +161,9 @@ RECOMMENDATIONS:
     } catch (error) {
       console.error('Error processing audio:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error processing response. Please try again.';
-      setFeedback(`❌ Error: ${errorMessage}
 
-💡 Try enabling Demo Mode to practice without API calls.`);
+      // Show error in a more prominent way
+      setFeedback(`❌ **Error Occurred**\n\n${errorMessage}\n\n🔄 **What you can do:**\n• Enable Demo Mode to practice without API calls\n• Check your OpenAI account billing\n• Wait for quota reset (usually daily)\n• Try recording again`);
     } finally {
       setIsProcessing(false);
     }
