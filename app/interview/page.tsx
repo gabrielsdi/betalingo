@@ -23,6 +23,7 @@ export default function Interview() {
   const [feedback, setFeedback] = useState('');
   const [completedQuestions, setCompletedQuestions] = useState<Set<number>>(new Set());
   const [demoMode, setDemoMode] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -102,6 +103,43 @@ RECOMMENDATIONS:
     }
 
     try {
+      if (demoMode) {
+        // Demo mode: simulate processing
+        setIsProcessing(true);
+        setTranscription('This is a demo transcription. In real mode, your audio would be transcribed here.');
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API delay
+
+        const demoFeedback = `CONTENT ANALYSIS:
+- Strengths of the answer: Good structure and clear communication
+- Areas for improvement: Could be more specific with technical details
+- Technical accuracy: Basic understanding demonstrated
+- Completeness of the response: Covers main points but could be more detailed
+
+PRONUNCIATION & COMMUNICATION:
+- Clarity of speech: Clear and understandable
+- Professional communication skills: Good pacing and confidence
+- Specific words/phrases that need pronunciation improvement: "JavaScript" could be more precise
+- Suggestions for better delivery: Practice speaking at a slightly slower pace
+
+OVERALL SCORE: 7/10
+
+RECOMMENDATIONS:
+1. Add more specific technical examples
+2. Practice pronunciation of technical terms
+3. Focus on confidence and clarity in delivery
+4. Consider time management for longer answers`;
+
+        setFeedback(demoFeedback);
+        setIsProcessing(false);
+
+        // Mark as completed
+        const newCompleted = new Set(completedQuestions);
+        newCompleted.add(currentQuestionIndex);
+        setCompletedQuestions(newCompleted);
+        saveProgress(newCompleted);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.wav');
       formData.append('question', interviewQuestions[currentQuestionIndex]);
@@ -114,7 +152,7 @@ RECOMMENDATIONS:
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
         if (errorData.error?.includes('quota') || errorData.error?.includes('billing') || errorData.error?.includes('insufficient_quota')) {
-          throw new Error('OpenAI API quota exceeded. Please check your OpenAI account billing or wait for quota reset.');
+          throw new Error('OpenAI API quota exceeded. Please check your OpenAI account billing or enable Demo Mode to practice without API calls.');
         }
         throw new Error(`Failed to process response: ${errorData.error || 'Unknown error'}`);
       }
@@ -130,7 +168,12 @@ RECOMMENDATIONS:
       saveProgress(newCompleted);
     } catch (error) {
       console.error('Error processing audio:', error);
-      setFeedback(error instanceof Error ? error.message : 'Error processing response. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Error processing response. Please try again.';
+      setFeedback(`❌ Error: ${errorMessage}
+
+💡 Try enabling Demo Mode to practice without API calls.`);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -139,6 +182,7 @@ RECOMMENDATIONS:
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setTranscription('');
       setFeedback('');
+      setIsProcessing(false);
     }
   };
 
@@ -147,6 +191,7 @@ RECOMMENDATIONS:
       setCurrentQuestionIndex(currentQuestionIndex - 1);
       setTranscription('');
       setFeedback('');
+      setIsProcessing(false);
     }
   };
 
@@ -202,16 +247,24 @@ RECOMMENDATIONS:
           <div className="text-center mb-8">
             <button
               onClick={isRecording ? stopRecording : startRecording}
-              className={`px-6 py-3 rounded-lg font-semibold text-white ${
-                isRecording
+              disabled={isProcessing}
+              className={`px-6 py-3 rounded-lg font-semibold text-white transition-colors ${
+                isProcessing
+                  ? 'bg-gray-500 cursor-not-allowed'
+                  : isRecording
                   ? 'bg-red-600 hover:bg-red-700'
                   : 'bg-green-600 hover:bg-green-700'
-              } transition-colors`}
+              }`}
             >
-              {isRecording ? 'Stop Recording' : `Start Your Answer${demoMode ? ' (Demo)' : ''}`}
+              {isProcessing ? 'Processing...' : isRecording ? 'Stop Recording' : `Start Your Answer${demoMode ? ' (Demo)' : ''}`}
             </button>
             <p className="text-sm text-gray-500 mt-2">
-              Click to record your response using your microphone
+              {isProcessing
+                ? 'Analyzing your response...'
+                : isRecording
+                ? 'Recording... Click to stop'
+                : 'Click to record your response using your microphone'
+              }
             </p>
           </div>
 
