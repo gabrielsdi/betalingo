@@ -1,31 +1,5 @@
 import Link from 'next/link';
-
-const lessons = [
-  {
-    id: 'basics',
-    title: 'Basic Web Development Terms',
-    description: 'Essential vocabulary for web development interviews',
-    words: ['HTML', 'CSS', 'JavaScript', 'DOM', 'API', 'HTTP', 'Browser', 'Server']
-  },
-  {
-    id: 'frameworks',
-    title: 'Frameworks & Libraries',
-    description: 'Popular frameworks and their concepts',
-    words: ['React', 'Vue', 'Angular', 'Node.js', 'Express', 'Next.js', 'Tailwind']
-  },
-  {
-    id: 'algorithms',
-    title: 'Algorithms & Data Structures',
-    description: 'Key terms for algorithmic questions',
-    words: ['Array', 'Linked List', 'Stack', 'Queue', 'Hash Table', 'Tree', 'Graph']
-  },
-  {
-    id: 'databases',
-    title: 'Databases',
-    description: 'Database concepts and technologies',
-    words: ['SQL', 'NoSQL', 'MongoDB', 'PostgreSQL', 'Redis', 'ORM', 'Migration']
-  }
-];
+import { lessons } from '@/lib/data';
 
 export default function Lessons() {
   return (
@@ -40,7 +14,7 @@ export default function Lessons() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          {lessons.map((lesson) => (
+          {lessons.filter(lesson => lesson.id === 'interview-phrases').map((lesson) => (
             <Link
               key={lesson.id}
               href={`/practice/${lesson.id}`}
@@ -51,19 +25,43 @@ export default function Lessons() {
               </h2>
               <p className="text-gray-600 mb-4">{lesson.description}</p>
               <div className="flex flex-wrap gap-2">
-                {lesson.words.slice(0, 4).map((word) => (
-                  <span
-                    key={word}
-                    className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm"
-                  >
-                    {word}
-                  </span>
-                ))}
-                {lesson.words.length > 4 && (
-                  <span className="text-gray-500 text-sm">
-                    +{lesson.words.length - 4} more
-                  </span>
-                )}
+                {lesson.type === 'vocabulary' && lesson.words ? (
+                  <>
+                    {lesson.words.slice(0, 4).map((word) => (
+                      <span
+                        key={word.term}
+                        className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm"
+                      >
+                        {word.term}
+                      </span>
+                    ))}
+                    {lesson.words.length > 4 && (
+                      <span className="text-gray-500 text-sm">
+                        +{lesson.words.length - 4} more
+                      </span>
+                    )}
+                  </>
+                ) : lesson.type === 'phrases' && lesson.phrases ? (
+                  <>
+                    {lesson.phrases.slice(0, 4).map((phrase) => (
+                      <span
+                        key={phrase.id}
+                        className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm"
+                      >
+                        {phrase.spanish}
+                      </span>
+                    ))}
+                    {lesson.phrases.length > 4 && (
+                      <span className="text-gray-500 text-sm">
+                        +{lesson.phrases.length - 4} more
+                      </span>
+                    )}
+                  </>
+                ) : null}
+              </div>
+              <div className="mt-4 text-sm text-gray-500">
+                {lesson.type === 'vocabulary' && lesson.words && `${lesson.words.length} words`}
+                {lesson.type === 'phrases' && lesson.phrases && `${lesson.phrases.length} phrases`}
               </div>
             </Link>
           ))}

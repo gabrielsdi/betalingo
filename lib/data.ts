@@ -5,11 +5,22 @@ export interface Word {
   pronunciation?: string;
 }
 
+export interface InterviewPhrase {
+  id: string;
+  spanish: string;
+  english: string;
+  culturalNote?: string;
+  context: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+}
+
 export interface Lesson {
   id: string;
   title: string;
   description: string;
-  words: Word[];
+  words?: Word[];
+  phrases?: InterviewPhrase[];
+  type: 'vocabulary' | 'phrases';
 }
 
 export const lessons: Lesson[] = [
@@ -17,6 +28,7 @@ export const lessons: Lesson[] = [
     id: 'basics',
     title: 'Basic Web Development Terms',
     description: 'Essential vocabulary for web development interviews',
+    type: 'vocabulary',
     words: [
       {
         term: 'HTML',
@@ -64,6 +76,7 @@ export const lessons: Lesson[] = [
     id: 'frameworks',
     title: 'Frameworks & Libraries',
     description: 'Popular frameworks and their concepts',
+    type: 'vocabulary',
     words: [
       {
         term: 'React',
@@ -106,6 +119,7 @@ export const lessons: Lesson[] = [
     id: 'algorithms',
     title: 'Algorithms & Data Structures',
     description: 'Key terms for algorithmic questions',
+    type: 'vocabulary',
     words: [
       {
         term: 'Array',
@@ -148,6 +162,7 @@ export const lessons: Lesson[] = [
     id: 'databases',
     title: 'Databases',
     description: 'Database concepts and technologies',
+    type: 'vocabulary',
     words: [
       {
         term: 'SQL',
@@ -183,6 +198,78 @@ export const lessons: Lesson[] = [
         term: 'Migration',
         definition: 'The process of moving data from one system to another',
         example: 'Database migrations update the schema without losing data.'
+      }
+    ]
+  },
+  {
+    id: 'interview-phrases',
+    title: 'Interview Communication',
+    description: 'Professional phrases and cultural differences for tech interviews',
+    type: 'phrases',
+    phrases: [
+      {
+        id: 'schedule-meeting',
+        spanish: 'Agendo una reunión para la tarde',
+        english: 'I\'ll schedule a meeting for this afternoon',
+        culturalNote: 'In US business culture, "schedule" is more common than "agenda" for meetings',
+        context: 'When coordinating with your team about project timelines',
+        difficulty: 'beginner'
+      },
+      {
+        id: 'team-collaboration',
+        spanish: 'Trabajo en equipo con el grupo',
+        english: 'I collaborate with the team',
+        culturalNote: 'US workplaces emphasize "team player" mentality and cross-functional collaboration',
+        context: 'Describing your work style in interviews',
+        difficulty: 'beginner'
+      },
+      {
+        id: 'project-deadline',
+        spanish: 'La fecha límite del proyecto es mañana',
+        english: 'The project deadline is tomorrow',
+        culturalNote: 'US business uses "deadline" frequently; be prepared to discuss time management',
+        context: 'When discussing project management experience',
+        difficulty: 'intermediate'
+      },
+      {
+        id: 'code-review',
+        spanish: 'Revisé el código del compañero',
+        english: 'I reviewed my colleague\'s code',
+        culturalNote: 'Code reviews are standard in US tech companies; emphasize constructive feedback',
+        context: 'Talking about development workflow',
+        difficulty: 'intermediate'
+      },
+      {
+        id: 'stakeholder-meeting',
+        spanish: 'Tuve una reunión con los interesados',
+        english: 'I had a meeting with stakeholders',
+        culturalNote: 'US business frequently uses "stakeholders" instead of "interested parties"',
+        context: 'When discussing client or management interactions',
+        difficulty: 'advanced'
+      },
+      {
+        id: 'agile-methodology',
+        spanish: 'Trabajamos con metodología ágil',
+        english: 'We work with agile methodology',
+        culturalNote: 'Agile/Scrum is very common in US tech; be familiar with terms like sprint, backlog, standup',
+        context: 'Describing development processes',
+        difficulty: 'advanced'
+      },
+      {
+        id: 'performance-review',
+        spanish: 'Hice la evaluación de desempeño',
+        english: 'I conducted the performance review',
+        culturalNote: 'US companies do formal performance reviews; focus on constructive feedback and growth',
+        context: 'Management or leadership experience',
+        difficulty: 'advanced'
+      },
+      {
+        id: 'remote-work',
+        spanish: 'Trabajo desde casa los viernes',
+        english: 'I work from home on Fridays',
+        culturalNote: 'Remote/hybrid work is common in US tech; discuss tools like Slack, Zoom, Notion',
+        context: 'Work-life balance and flexibility',
+        difficulty: 'intermediate'
       }
     ]
   }

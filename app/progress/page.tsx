@@ -39,11 +39,11 @@ export default function Progress() {
   const getLessonProgress = (lessonId: string) => {
     const completed = progress[lessonId] || [];
     const lesson = lessons.find(l => l.id === lessonId);
-    return lesson ? (completed.length / lesson.words.length) * 100 : 0;
+    return lesson && lesson.words ? (completed.length / lesson.words.length) * 100 : 0;
   };
 
   const getTotalProgress = () => {
-    const totalWords = lessons.reduce((sum, lesson) => sum + lesson.words.length, 0);
+    const totalWords = lessons.reduce((sum, lesson) => sum + (lesson.words ? lesson.words.length : 0), 0);
     const totalCompleted = Object.values(progress).reduce((sum, completed) => sum + completed.length, 0);
     return totalWords > 0 ? (totalCompleted / totalWords) * 100 : 0;
   };
@@ -104,7 +104,7 @@ export default function Progress() {
                     ></div>
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
-                    {completedCount} of {lesson.words.length} words practiced ({progressPercent.toFixed(1)}%)
+                    {completedCount} of {lesson.words ? lesson.words.length : 0} words practiced ({progressPercent.toFixed(1)}%)
                   </p>
                 </div>
                 <Link
