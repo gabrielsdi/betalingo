@@ -67,9 +67,9 @@ export default function Interview() {
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
+      setIsProcessing(true); // Start loading immediately when stopping recording
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      setIsProcessing(true);
     }
   };
 
@@ -221,7 +221,7 @@ RECOMMENDATIONS:
           <div className="text-center mb-8">
             <button
               onClick={isRecording ? stopRecording : startRecording}
-              disabled={isProcessing || isRecording}
+              disabled={isProcessing}
               className={`px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
                 isProcessing
                   ? 'bg-gray-400 cursor-not-allowed opacity-60'
@@ -233,7 +233,7 @@ RECOMMENDATIONS:
               {isProcessing ? (
                 <div className="flex items-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Processing...</span>
+                  <span>Analyzing...</span>
                 </div>
               ) : isRecording ? (
                 'Stop Recording'
