@@ -69,12 +69,11 @@ export default function Interview() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      setIsProcessing(true);
     }
   };
 
   const processAudio = async (audioBlob: Blob) => {
-    setIsProcessing(true);
-
     try {
       if (demoMode) {
         // Demo mode: simulate processing with realistic feedback
